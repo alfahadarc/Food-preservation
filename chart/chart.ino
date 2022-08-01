@@ -1,50 +1,56 @@
-  #include <WiFi.h>
-  #include <Wire.h>
-  #include <ESPAsyncWebServer.h>
-  #include <SPIFFS.h>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <SPIFFS.h>
+#include <Wire.h>
 
-  //sensors 
-  #include <Adafruit_Sensor.h>  // include Adafruit sensor library
-  #include <Adafruit_BMP280.h>  // include adafruit library for BMP280 sensor
-
-  #define BMP280_I2C_ADDRESS  0x76
-
-  Adafruit_BMP280 bmp280;
+//bmp
+#include <Adafruit_Sensor.h>  // include Adafruit sensor library
+#include <Adafruit_BMP280.h>  // include adafruit library for BMP280 sensor
 
 
+// define device I2C address: 0x76 or 0x77 (0x77 is library default address)
+#define BMP280_I2C_ADDRESS  0x76
 
-  //arduino to esp32 serial
-  #define RXp2 16
-  #define TXp2 17
+Adafruit_BMP280 bmp280;
+
+//bmp end
+
+
+#define RXp2 16
+#define TXp2 17
 
 // Replace with your network credentials
-#define WIFI_SSID "Aronnok"
-#define WIFI_PASSWORD "337077dark_world"
+const char* ssid = "Aronnok";
+const char* password = "337077dark_world";
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
 String readBME280Temperature() {
   // Read temperature as Celsius (the default)
-    float temperature = bmp280.readTemperature();  // get temperature
-    return String(temperature);
+  //String t = Serial2.readString();
+  //Serial.println(t);
+  //return String(t);
+   float t = bmp280.readTemperature();  // get temperature
+   return String(t);
+
 }
 
 
-void setup(){
+void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
 
-  //initialize bmp
-    if (!bmp280.begin(BMP280_I2C_ADDRESS))
+  //init bmp
+   if (!bmp280.begin(BMP280_I2C_ADDRESS))
   {  
-    //Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+    Serial.println("Could not find a valid BMP280 sensor, check wiring!");
     while (1);
   }
 
   // Initialize SPIFFS
-  if(!SPIFFS.begin()){
+  if (!SPIFFS.begin()) {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
@@ -60,16 +66,16 @@ void setup(){
   Serial.println(WiFi.localIP());
 
   // Route for root / web page
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/index.html");
   });
-  server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", readBME280Temperature().c_str());
   });
   // Start server
   server.begin();
 }
- 
-void loop(){
-  
+
+void loop() {
+
 }
