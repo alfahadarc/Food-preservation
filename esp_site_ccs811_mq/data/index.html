@@ -1,0 +1,219 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <style>
+        /* table gen */
+        table.GeneratedTable {
+            width: 100%;
+            background-color: #ffffff;
+            border-collapse: collapse;
+            border-width: 2px;
+            border-color: #0040ff;
+            border-style: solid;
+            color: #000000;
+        }
+
+        table.GeneratedTable td,
+        table.GeneratedTable th {
+            border-width: 2px;
+            border-color: #0040ff;
+            border-style: solid;
+            padding: 3px;
+        }
+
+        table.GeneratedTable thead {
+            background-color: #00aaff;
+        }
+
+        /* table end */
+        body {
+            min-width: 310px;
+            max-width: 800px;
+            height: 400px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-family: Arial;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>ESP Weather Station</h2>
+    <div id="chart-temperature" class="container"></div>
+    <!-- <div id="chart-humidity" class="container"></div>
+  <div id="chart-pressure" class="container"></div> -->
+    <div>
+        <!-- HTML Code: Place this code in the document's body (between the 'body' tags) where the table should appear -->
+        <table class="GeneratedTable">
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>CO2</td>
+                    <td><span id="CO2"></span></td>
+                </tr>
+                <tr>
+                    <td>Toluene</td>
+                    <td><span id="Toluene"></span></td>
+                </tr>
+                <tr>
+                    <td>NH4</td>
+                    <td><span id="NH4"></span></td>
+                </tr>
+                <tr>
+                    <td>Acetone</td>
+                    <td><span id="Acetone"></span></td>
+                </tr>
+                <tr>
+                    <td>TVOC</td>
+                    <td><span id="TVOC"></span></td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- Codes by Quackit.com -->
+
+
+
+
+
+    </div>
+</body>
+<script>
+    window.addEventListener('load', getReadings_CO2);
+    window.addEventListener('load', getReadings_Toluene);
+    window.addEventListener('load', getReadings_NH4);
+    window.addEventListener('load', getReadings_Acetone);
+    window.addEventListener('load', getReadings_TVOC);
+    var chartT = new Highcharts.Chart({
+        chart: { renderTo: 'chart-temperature' },
+        title: { text: 'BME280 Temperature' },
+        series: [{
+            showInLegend: false,
+            data: []
+        }],
+        plotOptions: {
+            line: {
+                animation: false,
+                dataLabels: { enabled: true }
+            },
+            series: { color: '#059e8a' }
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { second: '%H:%M:%S' }
+        },
+        yAxis: {
+            title: { text: 'Temperature (Celsius)' }
+            //title: { text: 'Temperature (Fahrenheit)' }
+        },
+        credits: { enabled: false }
+    });
+    setInterval(function () {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var x = (new Date()).getTime(),
+                    y = parseFloat(this.responseText);
+                //console.log(this.responseText);
+                if (chartT.series[0].data.length > 40) {
+                    chartT.series[0].addPoint([x, y], true, true, true);
+                } else {
+                    chartT.series[0].addPoint([x, y], true, false, true);
+                }
+            }
+        };
+        xhttp.open("GET", "/temperature", true);
+        xhttp.send();
+    }, 5000);
+
+    //get data
+    var CO2 = document.getElementById('CO2');
+    var Toluene = document.getElementById('Toluene');
+    var NH4 = document.getElementById('NH4');
+    var Acetone = document.getElementById('Acetone');
+    var TVOC = document.getElementById('TVOC');
+    function getReadings_CO2() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                CO2.innerHTML = this.responseText;
+            }
+        };
+        xhr.open("GET", "/readings_CO2", true);
+        xhr.send();
+    }
+    setInterval(function () {
+        getReadings_CO2();
+    }, 5000);
+
+    //Toluene
+    function getReadings_Toluene() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                Toluene.innerHTML = this.responseText;
+            }
+        };
+        xhr.open("GET", "/readings_Toluene", true);
+        xhr.send();
+    }
+    setInterval(function () {
+        getReadings_Toluene();
+    }, 5000);
+    //NH4
+    function getReadings_NH4() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                NH4.innerHTML = this.responseText;
+            }
+        };
+        xhr.open("GET", "/readings_NH4", true);
+        xhr.send();
+    }
+    setInterval(function () {
+        getReadings_NH4();
+    }, 5000);
+    //Acetone
+    function getReadings_Acetone() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                Acetone.innerHTML = this.responseText;
+            }
+        };
+        xhr.open("GET", "/readings_Acetone", true);
+        xhr.send();
+    }
+    setInterval(function () {
+        getReadings_Acetone();
+    }, 5000);
+    //TVOC
+    function getReadings_TVOC() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                TVOC.innerHTML = this.responseText;
+            }
+        };
+        xhr.open("GET", "/readings_TVOC", true);
+        xhr.send();
+    }
+    setInterval(function () {
+        getReadings_TVOC();
+    }, 5000);
+
+</script>
+
+</html>
