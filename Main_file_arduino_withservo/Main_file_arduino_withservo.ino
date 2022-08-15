@@ -1,24 +1,6 @@
-
-//motor pin
-#define in1 8
-#define in2 7
-#define enA 9
-//bme----------------
-#include <SPI.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
-
-#define BME_SCK 13
-#define BME_MISO 12
-#define BME_MOSI 11
-#define BME_CS 10
-
-#define SEALEVELPRESSURE_HPA (1013.25)
-
-Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI
-
 // CCS811------------
 #include "Adafruit_CCS811.h"
+#include <Servo.h>
 
 Adafruit_CCS811 ccs;
 // CCS811------------
@@ -35,15 +17,17 @@ Adafruit_CCS811 ccs;
 MQUnifiedsensor MQ135(Board, Voltage_Resolution, ADC_Bit_Resolution, Pin135, Type);
 
 // global variables
-float CO2, Toluene, NH4, Acetone, Temp, P, Hum;
+float CO2, Toluene, NH4, Acetone;
 float TVOC;
 String data;
-float tempThreshHold = 35;
 
+Servo myservo;
 
 int resval = 0;  // holds the value
 int respin = A0; // sensor pin used
 
+int pos = 0;
+  
 void MQinit()
 {
   MQ135.init();
@@ -55,59 +39,36 @@ void MQinit()
 
 void setup()
 {
-  //motor setup
-  pinMode(enA, OUTPUT);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  //bme start
-  Serial.println(F("BME280 test"));
-
-  bool status;
-
-  // default settings
-  // (you can also pass in a Wire library object like &Wire2)
-  status = bme.begin();
-  if (!status) {
-    Serial.println("Could not find a valid BME280 sensor, check wiring!");
-    while (1);
-  }
-
-  Serial.println("-- Default Test --");
-
-  Serial.println();
+  Serial.begin(9600);  
   // start mq
   MQinit();
 
   // start ccs811
   if (!ccs.begin())
   {
-    Serial.println("Failed to start ccs811 sensor! Please check your wiring.");
+    Serial.println("Failed to start sensor! Please check your wiring.");
     while (1);
-  } else {
+  }else{
     MQCalibration();
   }
 
   // Wait for the sensor to be ready
-  while (!ccs.available())
-    ;
+  while (!ccs.available());
+
+  myservo.attach(9);
+
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
-  bme_call();
-
-  data = data + " T"+ String(Temp);
-  data = data + " P"+ String(P);
-  data = data + " H"+ String(Hum);
-
+  
   MQ();
   data = data + " To" + String(Toluene);
   data = data + " N" + String(NH4);
   data = data + " A" + String(Acetone);
-
+  
   CCS811();
   data = data + " C" + String(CO2);
   data = data + " V" + String(TVOC);
@@ -115,12 +76,42 @@ void loop()
   water();
   data = data + " W" + String(resval);
   Serial.println(data);
-  data = "";
-  motorControl();
- // servoControl();
+
+  //servo();
   
+  
+
   delay(4000);
+  data = "";
 }
+
+//water level test
+
+void water() { 
+  resval = analogRead(respin); //Read data from analog pin and store it to resval variable  
+}
+
+void servo() {
+  int a = myservo.read();
+    //Serial.println(String(a));
+  if(resval>300){
+    if(myservo.read()>=-10 && myservo.read()<10){
+      for (pos = 0; pos <= 90; pos += 1) { // goes from 0 degrees to 180 degrees
+        // in steps of 1 degree
+        myservo.write(pos);              // tell servo to go to position in variable 'pos'
+        delay(10);                       // waits 15 ms for the servo to reach the position
+      }
+    }
+  }else{    
+    if(myservo.read()<=100 && myservo.read()>80){
+     for (pos = 90; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+        myservo.write(pos);              // tell servo to go to position in variable 'pos'
+        delay(10);                       // waits 15 ms for the servo to reach the position
+      }
+    }
+  }
+}
+
 
 // MQ function
 
@@ -142,11 +133,7 @@ void MQ()
   MQ135.setB(-3.369); // Acetone
   Acetone = MQ135.readSensor();
 }
-//water level test
 
-void water() { 
-  resval = analogRead(respin); //Read data from analog pin and store it to resval variable  
-}
 // CCS811 function
 void CCS811()
 {
@@ -159,24 +146,16 @@ void CCS811()
     }
     else
     {
-      Serial.println("ERROR ccs811!");
-      //while (1);
+      Serial.println("ERROR!");
+     // while (1);
     }
   }
 }
 
-//bme
-void bme_call() {
-
-  Temp = bme.readTemperature(); //*C
-  P = bme.readPressure() / 100.0F ; //hPa
-  Hum = bme.readHumidity();// %
-}
-
-void printAll() {
+void printAll(){
   Serial.print("Toluene:  ");
   Serial.println(Toluene);
-  Serial.print("NH4:  ");
+  Serial.print("NH4:  ");n/ 
   Serial.println(NH4);
   Serial.print("Acetone:  ");
   Serial.println(Acetone);
@@ -184,12 +163,14 @@ void printAll() {
   Serial.println(CO2);
   Serial.print("TVOC:  ");
   Serial.println(TVOC);
+  Serial.print("Water Level: ");
+  Serial.println(resval);
 }
 
-void MQCalibration() {
+void MQCalibration(){
   Serial.print("Calibrating please wait.");
   float MQ135calcR0 = 0;
-
+         
   for (int i = 1; i <= 10; i ++)
   {
     //Update the voltage lectures
@@ -201,14 +182,4 @@ void MQCalibration() {
   MQ135.setR0(MQ135calcR0 / 10);
   Serial.println("  done!.");
   Serial.print(MQ135calcR0 / 10); Serial.print(" | ");
-}
-
-void motorControl(){
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
-  if(Temp > tempThreshHold){
-    analogWrite(enA, 250);
-  }else{
-    analogWrite(enA, 100);
-  }
 }

@@ -45,10 +45,10 @@
 </head>
 
 <body>
-    <h2>ESP Weather Station</h2>
+    <h2>Food Preservation</h2>
     <div id="chart-temperature" class="container"></div>
-    <!-- <div id="chart-humidity" class="container"></div>
-  <div id="chart-pressure" class="container"></div> -->
+    <div id="chart-humidity" class="container"></div>
+    <div id="chart-pressure" class="container"></div>
     <div>
         <!-- HTML Code: Place this code in the document's body (between the 'body' tags) where the table should appear -->
         <table class="GeneratedTable">
@@ -59,6 +59,18 @@
                 </tr>
             </thead>
             <tbody>
+                <tr>
+                    <td>Temperature(C)</td>
+                    <td><span id="Temperature"></span></td>
+                </tr>
+                <tr>
+                    <td>Pressure(hPa)</td>
+                    <td><span id="Pressure"></span></td>
+                </tr>
+                <tr>
+                    <td>Humidity(%)</td>
+                    <td><span id="Humidity"></span></td>
+                </tr>
                 <tr>
                     <td>CO2</td>
                     <td><span id="CO2"></span></td>
@@ -79,6 +91,10 @@
                     <td>TVOC</td>
                     <td><span id="TVOC"></span></td>
                 </tr>
+                <tr>
+                    <td>Water Level</td>
+                    <td><span id="WL"></span></td>
+                </tr>
             </tbody>
         </table>
         <!-- Codes by Quackit.com -->
@@ -95,6 +111,13 @@
     window.addEventListener('load', getReadings_NH4);
     window.addEventListener('load', getReadings_Acetone);
     window.addEventListener('load', getReadings_TVOC);
+    window.addEventListener('load', getReadings_WL);
+
+    var Temperature = document.getElementById('Temperature');
+    var Pressure = document.getElementById('Pressure');
+    var Humidity = document.getElementById('Humidity');
+
+
     var chartT = new Highcharts.Chart({
         chart: { renderTo: 'chart-temperature' },
         title: { text: 'BME280 Temperature' },
@@ -125,6 +148,7 @@
             if (this.readyState == 4 && this.status == 200) {
                 var x = (new Date()).getTime(),
                     y = parseFloat(this.responseText);
+                Temperature.innerHTML = this.responseText;
                 //console.log(this.responseText);
                 if (chartT.series[0].data.length > 40) {
                     chartT.series[0].addPoint([x, y], true, true, true);
@@ -137,12 +161,96 @@
         xhttp.send();
     }, 5000);
 
+    var chartH = new Highcharts.Chart({
+        chart: { renderTo: 'chart-humidity' },
+        title: { text: 'BME280 Humidity' },
+        series: [{
+            showInLegend: false,
+            data: []
+        }],
+        plotOptions: {
+            line: {
+                animation: false,
+                dataLabels: { enabled: true }
+            }
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { second: '%H:%M:%S' }
+        },
+        yAxis: {
+            title: { text: 'Humidity (%)' }
+        },
+        credits: { enabled: false }
+    });
+    setInterval(function () {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var x = (new Date()).getTime(),
+                    y = parseFloat(this.responseText);
+                Humidity.innerHTML = this.responseText;
+                //console.log(this.responseText);
+                if (chartH.series[0].data.length > 40) {
+                    chartH.series[0].addPoint([x, y], true, true, true);
+                } else {
+                    chartH.series[0].addPoint([x, y], true, false, true);
+                }
+            }
+        };
+        xhttp.open("GET", "/humidity", true);
+        xhttp.send();
+    }, 30000);
+
+    var chartP = new Highcharts.Chart({
+        chart: { renderTo: 'chart-pressure' },
+        title: { text: 'BME280 Pressure' },
+        series: [{
+            showInLegend: false,
+            data: []
+        }],
+        plotOptions: {
+            line: {
+                animation: false,
+                dataLabels: { enabled: true }
+            },
+            series: { color: '#18009c' }
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { second: '%H:%M:%S' }
+        },
+        yAxis: {
+            title: { text: 'Pressure (hPa)' }
+        },
+        credits: { enabled: false }
+    });
+    setInterval(function () {
+        var xhttp = new XmMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var x = (new Date()).getTime(),
+                    y = parseFloat(this.responseText);
+                Pressure.innerHTML = this.responseText;
+                //console.log(this.responseText);
+                if (chartP.series[0].data.length > 40) {
+                    chartP.series[0].addPoint([x, y], true, true, true);
+                } else {
+                    chartP.series[0].addPoint([x, y], true, false, true);
+                }
+            }
+        };
+        xhttp.open("GET", "/pressure", true);
+        xhttp.send();
+    }, 30000);
+
     //get data
     var CO2 = document.getElementById('CO2');
     var Toluene = document.getElementById('Toluene');
     var NH4 = document.getElementById('NH4');
     var Acetone = document.getElementById('Acetone');
     var TVOC = document.getElementById('TVOC');
+    var WL = document.getElementById('WL');
     function getReadings_CO2() {
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -212,6 +320,21 @@
     }
     setInterval(function () {
         getReadings_TVOC();
+    }, 5000);
+
+    //Water Level
+    function getReadings_WL() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                WL.innerHTML = this.responseText;
+            }
+        };
+        xhr.open("GET", "/readings_WL", true);
+        xhr.send();
+    }
+    setInterval(function () {
+        getReadings_WL();
     }, 5000);
 
 </script>
