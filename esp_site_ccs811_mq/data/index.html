@@ -41,6 +41,15 @@
             font-size: 2.5rem;
             text-align: center;
         }
+
+        .footer {
+            position: relative;
+            width: 100%;
+            background-color: gray;
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 
@@ -98,12 +107,8 @@
             </tbody>
         </table>
         <!-- Codes by Quackit.com -->
-
-
-
-
-
     </div>
+    <div class="footer">@Copyright MMES Project.</div>
 </body>
 <script>
     window.addEventListener('load', getReadings_CO2);
@@ -159,7 +164,7 @@
         };
         xhttp.open("GET", "/temperature", true);
         xhttp.send();
-    }, 5000);
+    }, 3000);
 
     var chartH = new Highcharts.Chart({
         chart: { renderTo: 'chart-humidity' },
@@ -200,7 +205,7 @@
         };
         xhttp.open("GET", "/humidity", true);
         xhttp.send();
-    }, 30000);
+    }, 3000);
 
     var chartP = new Highcharts.Chart({
         chart: { renderTo: 'chart-pressure' },
@@ -226,7 +231,7 @@
         credits: { enabled: false }
     });
     setInterval(function () {
-        var xhttp = new XmMLHttpRequest();
+        var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 var x = (new Date()).getTime(),
@@ -242,7 +247,7 @@
         };
         xhttp.open("GET", "/pressure", true);
         xhttp.send();
-    }, 30000);
+    }, 3000);
 
     //get data
     var CO2 = document.getElementById('CO2');
@@ -263,7 +268,7 @@
     }
     setInterval(function () {
         getReadings_CO2();
-    }, 5000);
+    }, 3000);
 
     //Toluene
     function getReadings_Toluene() {
@@ -278,7 +283,7 @@
     }
     setInterval(function () {
         getReadings_Toluene();
-    }, 5000);
+    }, 3000);
     //NH4
     function getReadings_NH4() {
         var xhr = new XMLHttpRequest();
@@ -292,7 +297,7 @@
     }
     setInterval(function () {
         getReadings_NH4();
-    }, 5000);
+    }, 3000);
     //Acetone
     function getReadings_Acetone() {
         var xhr = new XMLHttpRequest();
@@ -306,7 +311,7 @@
     }
     setInterval(function () {
         getReadings_Acetone();
-    }, 5000);
+    }, 3000);
     //TVOC
     function getReadings_TVOC() {
         var xhr = new XMLHttpRequest();
@@ -320,7 +325,7 @@
     }
     setInterval(function () {
         getReadings_TVOC();
-    }, 5000);
+    }, 3000);
 
     //Water Level
     function getReadings_WL() {
@@ -335,7 +340,7 @@
     }
     setInterval(function () {
         getReadings_WL();
-    }, 5000);
+    }, 3000);
 
 </script>
 

@@ -116,10 +116,10 @@ void loop()
 {
   Serial.println("Message Received: ");
   String data = Serial2.readString();
-  //Serial.println(data);
-  //Serial.println(".....");
+  // Serial.println(data);
+  // Serial.println(".....");
   string_split(data);
-  delay(4000);
+  delay(3000);
 }
 
 void string_split(String str)
@@ -131,45 +131,6 @@ void string_split(String str)
     {
       String val;
       val = str;
-      {
-        int v = val.indexOf("T");
-        Temp = val.substring(v + 1);
-      }
-      if (val.indexOf("P") > -1)
-      {
-        int v = val.indexOf("P");
-        P = val.substring(v + 1);
-      }
-      if (val.indexOf("H") > -1)
-      {
-        int v = val.indexOf("H");
-        Hum = val.substring(v + 1);
-      }
-      if (val.indexOf("C") > -1)
-      {
-        int v = val.indexOf("C");
-        CO2 = val.substring(v + 1);
-      }
-      if (val.indexOf("N") > -1)
-      {
-        int v = val.indexOf("N");
-        NH4 = val.substring(v + 1);
-      }
-      if (val.indexOf("To") > -1)
-      {
-        int v = val.indexOf("To");
-        Toluene = val.substring(v + 2);
-      }
-      if (val.indexOf("A") > -1)
-      {
-        int v = val.indexOf("A");
-        Acetone = val.substring(v + 1);
-      }
-      if (val.indexOf("V") > -1)
-      {
-        int v = val.indexOf("V");
-        TVOC = val.substring(v + 1);
-      }
       if (val.indexOf("W") > -1)
       {
         int v = val.indexOf("W");
@@ -184,11 +145,11 @@ void string_split(String str)
       String val;
       val = str.substring(0, index);
       str = str.substring(index + 1);
-      if (val.indexOf("T") > -1)
+      if (val.indexOf("M") > -1)
       {
-        int v = val.indexOf("T");
+        int v = val.indexOf("M");
         Temp = val.substring(v + 1);
-        Serial.print(" T ");
+        Serial.print(" M ");
         Serial.println(Temp);
       }
       if (val.indexOf("P") > -1)
@@ -250,9 +211,6 @@ void string_split(String str)
       {
         int v = val.indexOf("W");
         WL = val.substring(v + 2);
-
-        Serial.print(" W ");
-        Serial.println(WL);
       }
     }
   }
