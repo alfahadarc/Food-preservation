@@ -45,9 +45,9 @@ MQUnifiedsensor MQ135(Board, Voltage_Resolution, ADC_Bit_Resolution, Pin135, Typ
 float CO2, Toluene, NH4, Acetone, Temp, P, Hum;
 float TVOC;
 String data;
-float tempThreshHold = 35;
+int tempThreshHold = 32;
 int waterThreshHold = 200;
-int hThreshHold = 70;
+int hThreshHold = 65;
 
 
 int waterval = 0; // holds the value
@@ -107,9 +107,7 @@ void setup()
 
   // Wait for the sensor to be ready
   //while (!ccs.available());
-  Serial.println("i am here");
-  analogWrite(pwm,255) ;
-  delay(5000);
+ 
 }
 
 void loop()
@@ -117,7 +115,22 @@ void loop()
   // put your main code here, to run repeatedly:
   digitalWrite(in_1,HIGH) ;
   digitalWrite(in_2,LOW) ;
-  analogWrite(pwm,motorVal) ;
+
+
+  if (Temp > tempThreshHold || Hum > hThreshHold)
+  {//on
+    Serial.println(" 250 ");
+    analogWrite(pwm,255) ;
+    
+  }
+  else
+  {//off
+    Serial.println(" 100 ");
+    analogWrite(pwm,100) ;
+  }
+
+  
+  
   bme_call();
 
   data = data + " M" + String(Temp);
@@ -149,7 +162,7 @@ void MQ()
 {
   MQ135.update();
   MQ135.setA(110.47); MQ135.setB(-2.862); //CO2
-  CO2 = MQ135.readSensor()*600/2.85;
+  CO2 = MQ135.readSensor()*600/5.5;
 
   MQ135.setA(44.947);
   MQ135.setB(-3.445); // Toluene
@@ -231,7 +244,10 @@ void MQCalibration()
 
 void motorControl()
 {
-
+  digitalWrite(pwm,HIGH) ;
+  delay(motorVal);
+  //digitalWrite(pwm,LOW) ;
+  delay(500 - motorVal);
 
   if (Temp > tempThreshHold)
   {
@@ -241,20 +257,14 @@ void motorControl()
   }
   else
   {
-    Serial.println(" 100 ");
-    //analogWrite(pwm, 100);
     motorVal = 150;
   }
   if (Hum > hThreshHold)
   {
-    //analogWrite(pwm, 250);
-    Serial.println(" 250 ");
     motorVal = 255;
   }
   else
   {
-    Serial.println(" 100 ");
-    //analogWrite(pwm, 100);
     motorVal = 150;
   }
   //delay(5000);

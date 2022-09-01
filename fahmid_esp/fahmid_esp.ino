@@ -35,8 +35,21 @@ void smtpCallback(SMTP_Status status);
 
 // globals
 String CO2, Toluene, NH4, Acetone, TVOC, WL, Temp, P, Hum;
+
 float waterThreshHold = 200;
+float CO2th = 1000;
+float NH4th = 15;
+float TempthHigh = 32;
+float TempthLow = 15;
+float HumthHigh = 65;
+float HumthLow = 30;
+
+//int msgFlag = 0;
 int waterMsgFlag = 0;
+int co2MsgFlag = 0;
+int nh4MsgFlag = 0;
+int tMsgFlag = 0;
+int hMsgFlag = 0;
 
 // server
 //  Replace with your network credentials
@@ -272,13 +285,99 @@ void smtpCallback(SMTP_Status status){
     Serial.println("----------------\n");
   }
 }
+
+String getCO2Value(){
+  if(CO2.toFloat()>CO2th){
+    return "Warning: CO2 amount is high (" + CO2 + "ppm)\n";
+  }
+  return "CO2 amount is optimal (" + CO2 + "ppm)\n";
+}
+
+
+String getWLValue(){
+  if(WL.toFloat()>waterThreshHold){
+    return "Warning: Water level is high\n";
+  }
+  return "Water level is optimal\n";
+}
+
+String getTolValue(){
+  return "Toluene level is " + Toluene + "ppm\n";
+}
+
+
+String getNH4Value(){
+  if(NH4.toFloat()>NH4th){
+    return "Warning: NH4 level is high (" + NH4 + "ppm)\n";
+  }
+  return "NH4 level is optimal (" + NH4 + "ppm)\n";
+}
+
+
+String getAcetoneValue(){
+  return "Acetone level is " + Acetone + "ppm\n";
+}
+
+String getTVOCValue(){
+  return "TVOC level is " + TVOC + "ppm\n";
+}
+
+String getTempValue(){
+  if(Temp.toFloat()>TempthHigh){
+    return "Warning: Temperature level is high (" + Temp + "C)\n";
+  }else if(Temp.toFloat()<TempthLow){
+    return "Warning: Temperature level is low (" + Temp + "C)\n";
+  }
+  return "Temperature level is optimal (" + Temp + "C)\n";
+}
+
+
+String getPValue(){
+  return "Air Pressure is " + P + "hPa\n";
+}
+
+String getHumValue(){
+  if(Hum.toFloat()>HumthHigh){
+    return "Warning: Humidity level is high (" + Hum + "%)\n";
+  }else if(Hum.toFloat()<HumthLow){
+    return "Warning: Humidity level is low (" + Hum + "%)\n";
+  }
+  return "Humidity level is optimal (" + Hum + "%)\n";
+}
+
+
 void sendMessgae(){
   if( (waterMsgFlag == 0) && (WL.toFloat() > waterThreshHold)){
-    sendMsg("water level is high");
+    String msg =  getWLValue()+getTempValue()+getHumValue()+getCO2Value()+getTolValue()+getNH4Value()+getAcetoneValue()+getTVOCValue()+getPValue();    
+    sendMsg(msg);
     waterMsgFlag = 1;
+  }else if( (co2MsgFlag == 0) && (CO2.toFloat()>CO2th)){
+    String msg =  getWLValue()+getTempValue()+getHumValue()+getCO2Value()+getTolValue()+getNH4Value()+getAcetoneValue()+getTVOCValue()+getPValue();    
+    sendMsg(msg);
+    co2MsgFlag = 1;
+  }else if( (nh4MsgFlag == 0) && (NH4.toFloat()>NH4th)){
+    String msg =  getWLValue()+getTempValue()+getHumValue()+getCO2Value()+getTolValue()+getNH4Value()+getAcetoneValue()+getTVOCValue()+getPValue();    
+    sendMsg(msg);
+    nh4MsgFlag = 1;
+  }else if( (tMsgFlag == 0) && (Temp.toFloat()>TempthHigh || Temp.toFloat()<TempthLow)){
+    String msg =  getWLValue()+getTempValue()+getHumValue()+getCO2Value()+getTolValue()+getNH4Value()+getAcetoneValue()+getTVOCValue()+getPValue();    
+    sendMsg(msg);
+    tMsgFlag = 1;
+  }else if( ( hMsgFlag == 0) && (Hum.toFloat()>HumthHigh || Hum.toFloat()<HumthLow)){
+    String msg =  getWLValue()+getTempValue()+getHumValue()+getCO2Value()+getTolValue()+getNH4Value()+getAcetoneValue()+getTVOCValue()+getPValue();    
+    sendMsg(msg);
+     hMsgFlag = 1;
   }
-  if((waterMsgFlag == 1) && (WL.toFloat() < waterThreshHold)) {
+  if(waterMsgFlag == 1 && WL.toFloat() < waterThreshHold) {
     waterMsgFlag = 0;
+  }else if((co2MsgFlag == 1) && (CO2.toFloat()<CO2th)){
+    co2MsgFlag == 0;
+  }else if((nh4MsgFlag == 1) && (NH4.toFloat()<NH4th)){
+    nh4MsgFlag == 0;
+  }else if((tMsgFlag == 1) && (Temp.toFloat()<TempthHigh && Temp.toFloat()>TempthLow)){
+    tMsgFlag == 0;
+  }else if(( hMsgFlag == 1) && (Hum.toFloat()<HumthHigh && Hum.toFloat()>HumthLow)){
+    hMsgFlag == 0;
   }
 }
 void sendMsg(String msg){
